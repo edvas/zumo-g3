@@ -68,3 +68,28 @@ inline bool TestTransitionToAvoidingBorderInFrontTurning(const uint64_t duration
 {
   return millis() - g_timer_start >= duration;
 }
+
+inline State TestAllTransitionsToAvoidingBorders()
+{
+  const uint8_t detected_borders = GetDetectedBorders();
+          
+  // Event border detector on both sides
+  if (TestTransitionToAvoidingBorderInFrontMovingBackwards(detected_borders))
+  {
+    return State::AvoidingBorderInFrontMovingBackwards;
+  }
+  
+  // Event border detector on right side
+  if (TestTransitionToAvoidingBorderOnRightMovingBackwards(detected_borders))
+  {
+    return State::AvoidingBorderOnRightMovingBackwards;
+  }
+
+  // Event border detector on left side
+  if (TestTransitionToAvoidingBorderOnLeftMovingBackwards(detected_borders))
+  {
+    return State::AvoidingBorderOnLeftMovingBackwards;
+  }
+          
+  return State::None;
+}

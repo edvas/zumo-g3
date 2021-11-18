@@ -1,8 +1,9 @@
-
 #pragma GCC optimize ("O3")
 
 enum class State
 {
+  None,
+  
   Idle,
   Starting,
 
@@ -48,26 +49,11 @@ int main()
         
       case State::SeekingForward:
         { // Scope for detecting borders
-          const uint8_t detected_borders = GetDetectedBorders();
-          
           // Event border detector on both sides
-          if (TestTransitionToAvoidingBorderInFrontMovingBackwards(detected_borders))
+          const auto return_state = TestAllTransitionsToAvoidingBorders();
+          if (return_state != State::None)
           {
-            state = State::AvoidingBorderInFrontMovingBackwards;
-            break;
-          }
-          
-          // Event border detector on right side
-          if (TestTransitionToAvoidingBorderOnRightMovingBackwards(detected_borders))
-          {
-            state = State::AvoidingBorderOnRightMovingBackwards;
-            break;
-          }
-  
-          // Event border detector on left side
-          if (TestTransitionToAvoidingBorderOnLeftMovingBackwards(detected_borders))
-          {
-            state = State::AvoidingBorderOnLeftMovingBackwards;
+            state = return_state;
             break;
           }
         }
@@ -103,26 +89,11 @@ int main()
         
       case State::SeekingSideLeft:
         { // Scope for detecting borders
-          const uint8_t detected_borders = GetDetectedBorders();
-          
           // Event border detector on both sides
-          if (TestTransitionToAvoidingBorderInFrontMovingBackwards(detected_borders))
+          const auto return_state = TestAllTransitionsToAvoidingBorders();
+          if (return_state != State::None)
           {
-            state = State::AvoidingBorderInFrontMovingBackwards;
-            break;
-          }
-          
-          // Event border detector on right side
-          if (TestTransitionToAvoidingBorderOnRightMovingBackwards(detected_borders))
-          {
-            state = State::AvoidingBorderOnRightMovingBackwards;
-            break;
-          }
-  
-          // Event border detector on left side
-          if (TestTransitionToAvoidingBorderOnLeftMovingBackwards(detected_borders))
-          {
-            state = State::AvoidingBorderOnLeftMovingBackwards;
+            state = return_state;
             break;
           }
         }
@@ -143,26 +114,11 @@ int main()
         break;
       case State::SeekingSideRight:
         { // Scope for detecting borders
-          const uint8_t detected_borders = GetDetectedBorders();
-          
           // Event border detector on both sides
-          if (TestTransitionToAvoidingBorderInFrontMovingBackwards(detected_borders))
+          const auto return_state = TestAllTransitionsToAvoidingBorders();
+          if (return_state != State::None)
           {
-            state = State::AvoidingBorderInFrontMovingBackwards;
-            break;
-          }
-          
-          // Event border detector on right side
-          if (TestTransitionToAvoidingBorderOnRightMovingBackwards(detected_borders))
-          {
-            state = State::AvoidingBorderOnRightMovingBackwards;
-            break;
-          }
-  
-          // Event border detector on left side
-          if (TestTransitionToAvoidingBorderOnLeftMovingBackwards(detected_borders))
-          {
-            state = State::AvoidingBorderOnLeftMovingBackwards;
+            state = return_state;
             break;
           }
         }
@@ -184,26 +140,11 @@ int main()
         
       case State::SeekingCenterLeft:
         { // Scope for detecting borders
-          const uint8_t detected_borders = GetDetectedBorders();
-          
           // Event border detector on both sides
-          if (TestTransitionToAvoidingBorderInFrontMovingBackwards(detected_borders))
+          const auto return_state = TestAllTransitionsToAvoidingBorders();
+          if (return_state != State::None)
           {
-            state = State::AvoidingBorderInFrontMovingBackwards;
-            break;
-          }
-          
-          // Event border detector on right side
-          if (TestTransitionToAvoidingBorderOnRightMovingBackwards(detected_borders))
-          {
-            state = State::AvoidingBorderOnRightMovingBackwards;
-            break;
-          }
-  
-          // Event border detector on left side
-          if (TestTransitionToAvoidingBorderOnLeftMovingBackwards(detected_borders))
-          {
-            state = State::AvoidingBorderOnLeftMovingBackwards;
+            state = return_state;
             break;
           }
         }
@@ -232,26 +173,11 @@ int main()
         break;
       case State::SeekingCenterRight:
         { // Scope for detecting borders
-          const uint8_t detected_borders = GetDetectedBorders();
-          
           // Event border detector on both sides
-          if (TestTransitionToAvoidingBorderInFrontMovingBackwards(detected_borders))
+          const auto return_state = TestAllTransitionsToAvoidingBorders();
+          if (return_state != State::None)
           {
-            state = State::AvoidingBorderInFrontMovingBackwards;
-            break;
-          }
-          
-          // Event border detector on right side
-          if (TestTransitionToAvoidingBorderOnRightMovingBackwards(detected_borders))
-          {
-            state = State::AvoidingBorderOnRightMovingBackwards;
-            break;
-          }
-  
-          // Event border detector on left side
-          if (TestTransitionToAvoidingBorderOnLeftMovingBackwards(detected_borders))
-          {
-            state = State::AvoidingBorderOnLeftMovingBackwards;
+            state = return_state;
             break;
           }
         }
