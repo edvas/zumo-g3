@@ -1,8 +1,14 @@
 #pragma GCC optimize ("Os")
 
+//#define Z3_DEBUG
+//#define Z3_DEBUG_PRINT_AI
+
 const bool USE_WHITE_AS_BORDER = true;
 const uint8_t MAX_SPEED = 255;
 const uint8_t NO_SPEED = 0;
+
+extern uint8_t AI2_value;
+extern uint8_t AI3_value;
 
 enum class State
 {
@@ -27,7 +33,10 @@ enum class State
 
 int main()
 {
- 
+  #ifdef Z3_DEBUG
+    Serial.begin(9600);
+  #endif
+  
   { // Pin and timer configuration
     sei();
     
@@ -44,11 +53,20 @@ int main()
       TIMSK0 |= (1 << TOIE0);
     }
   }
-  
+
   State state = State::Idle;
 
   for(;;)
   {
+    #ifdef Z3_DEBUG_PRINT_AI
+      Serial.print(AI2_value);
+      Serial.print(" ");
+      Serial.println(AI3_value);
+    #endif
+        
+    ReadAnalogInputs();
+
+    // State machine
     switch(state)
     {
       case State::Idle:
@@ -68,129 +86,9 @@ int main()
         break;
         
       case State::SeekingForward:
-        { // Scope for detecting borders
-          // Event border detector on both sides
-          const auto return_state = TestAllTransitionsToAvoidingBorders();
-          if (return_state != State::None)
-          {
-            state = return_state;
-            break;
-          }
-        }
-
-        // Event target detector on left side active
-        if (TestTransitionToSeekingSideLeft())
-        {
-          state = State::SeekingSideLeft;
-          break;
-        }
-
-        // Event target detector on right side active
-        if (TestTransitionToSeekingSideRight())
-        {
-          state = State::SeekingSideRight;
-          break;
-        }
-
-        // Event target detector on left center active
-        if (TestTransitionToSeekingCenterLeft())
-        {
-          state = State::SeekingCenterLeft;
-          break;
-        }
-
-        // Event target detector on right center active
-        if (TestTransitionToSeekingCenterRight())
-        {
-          state = State::SeekingCenterRight;
-          break;
-        }
-        break;
-        
       case State::SeekingSideLeft:
-        { // Scope for detecting borders
-          // Event border detector on both sides
-          const auto return_state = TestAllTransitionsToAvoidingBorders();
-          if (return_state != State::None)
-          {
-            state = return_state;
-            break;
-          }
-        }
-
-        // Event target detector on right side active
-        if (TestTransitionToSeekingSideRight())
-        {
-          state = State::SeekingSideRight;
-          break;
-        }
-
-        // Event target detector on right center active
-        if (TestTransitionToSeekingCenterRight())
-        {
-          state = State::SeekingCenterRight;
-          break;
-        }
-        break;
-      case State::SeekingSideRight:
-        { // Scope for detecting borders
-          // Event border detector on both sides
-          const auto return_state = TestAllTransitionsToAvoidingBorders();
-          if (return_state != State::None)
-          {
-            state = return_state;
-            break;
-          }
-        }
-
-        // Event target detector on left side active
-        if (TestTransitionToSeekingSideLeft())
-        {
-          state = State::SeekingSideLeft;
-          break;
-        }
-
-        // Event target detector on left center active
-        if (TestTransitionToSeekingCenterLeft())
-        {
-          state = State::SeekingCenterLeft;
-          break;
-        }
-        break;
-        
+      case State::SeekingSideRight:   
       case State::SeekingCenterLeft:
-        { // Scope for detecting borders
-          // Event border detector on both sides
-          const auto return_state = TestAllTransitionsToAvoidingBorders();
-          if (return_state != State::None)
-          {
-            state = return_state;
-            break;
-          }
-        }
-
-        // Event target detector on left side active
-        if (TestTransitionToSeekingSideLeft())
-        {
-          state = State::SeekingSideLeft;
-          break;
-        }
-
-        // Event target detector on right side active
-        if (TestTransitionToSeekingSideRight())
-        {
-          state = State::SeekingSideRight;
-          break;
-        }
-
-        // Event target detector on right center active
-        if (TestTransitionToSeekingCenterRight())
-        {
-          state = State::SeekingCenterRight;
-          break;
-        }
-      
-        break;
       case State::SeekingCenterRight:
         { // Scope for detecting borders
           // Event border detector on both sides
@@ -203,18 +101,18 @@ int main()
         }
 
         // Event target detector on left side active
-        if (TestTransitionToSeekingSideLeft())
+        /*if (TestTransitionToSeekingSideLeft())
         {
           state = State::SeekingSideLeft;
           break;
-        }
+        }*/
 
         // Event target detector on right side active
-        if (TestTransitionToSeekingSideRight())
+        /*if (TestTransitionToSeekingSideRight())
         {
           state = State::SeekingSideRight;
           break;
-        }
+        }*/
 
         // Event target detector on left center active
         if (TestTransitionToSeekingCenterLeft())
@@ -222,15 +120,12 @@ int main()
           state = State::SeekingCenterLeft;
           break;
         }
-        break;
 
-      case State::AvoidingBorderOnLeftTurning:
-      case State::AvoidingBorderOnRightTurning:
-      case State::AvoidingBorderInFrontTurning:
-        // Event timeout
-        if (TestTransitionToSeekingForward(400))
+        // Event target detector on right center active
+        if (TestTransitionToSeekingCenterRight())
         {
-          state = State::SeekingForward;
+          state = State::SeekingCenterRight;
+          break;
         }
         break;
 
@@ -257,7 +152,17 @@ int main()
           state = State::AvoidingBorderInFrontTurning;
         }
         break;
-        
+
+      case State::AvoidingBorderOnLeftTurning:
+      case State::AvoidingBorderOnRightTurning:
+      case State::AvoidingBorderInFrontTurning:
+        // Event timeout
+        if (TestTransitionToSeekingForward(400))
+        {
+          state = State::SeekingForward;
+        }
+        break;
+      
       default:
         break;
     };

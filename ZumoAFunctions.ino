@@ -174,38 +174,17 @@ inline uint8_t GetDetectedBorders()
   }
 }
 
-/*
-uint8_t GetAnalogValue(uint8_t pin)
-{
-  if (pin >= 14) pin -= 14; // allow for channel or pin numbers
-
-  
-  // Set the analog reference to AVcc and select the channel (low 4 bits).
-  ADMUX = (1 << REFS0) | (1 << ADLAR) | (pin & 0b111);
-
-  // Scale input resolution to /128
-  ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
-  
-  // Start conversion
-  ADCSRA |= 1 << ADSC;
-
-  // ADSC is cleared when the conversion finishes
-  while ((ADCSRA >> ADSC) & 0b1);
-  
-  return ADCH;
-}
-*/
 
 // A4
 inline bool GetTargetCenterLeft()
 {
-  return analogRead(A2) >= 200;
+  return AI2_value >= 50;
 }
 
 // A5
 inline bool GetTargetCenterRight()
 {
-  return analogRead(A3) >= 200;
+  return AI3_value >= 50;
 }
 
 // A2
