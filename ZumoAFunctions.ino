@@ -1,4 +1,6 @@
-static constexpr bool USE_WHITE_AS_BORDER = true;
+extern const bool USE_WHITE_AS_BORDER;
+extern const uint8_t MAX_SPEED;
+extern const uint8_t NO_SPEED;
 
 // Atmega328p datasheet:
 // https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf
@@ -28,6 +30,10 @@ inline void SetPinModes()
   //                                     10 (left belt speed)
   TCCR1A =  (1 <<WGM10);
   TCCR1B = (1 << CS11) | (1 << CS10);
+
+  // ADC
+  ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+  ADCSRA |= 1 << ADEN;
 }
 
 inline void SetDriveDirectionToForward()
@@ -168,6 +174,7 @@ inline uint8_t GetDetectedBorders()
   }
 }
 
+/*
 uint8_t GetAnalogValue(uint8_t pin)
 {
   if (pin >= 14) pin -= 14; // allow for channel or pin numbers
@@ -187,27 +194,56 @@ uint8_t GetAnalogValue(uint8_t pin)
   
   return ADCH;
 }
+*/
 
-// A0
+// A4
 inline bool GetTargetCenterLeft()
 {
-  return GetAnalogValue(0) >= 3;
+  return analogRead(A2) >= 200;
 }
 
-// A1
+// A5
 inline bool GetTargetCenterRight()
 {
-  return GetAnalogValue(1) >= 3;
+  return analogRead(A3) >= 200;
 }
 
 // A2
 inline bool GetTargetSideLeft()
 {
-  return false;
+  // Clears the trigPin
+  DDRC |= (1 << 0);
+  PORTC &= ~(1 << 0);
+  delayMicroseconds(2);
+  PORTC |= (1 << 0);
+  delayMicroseconds(10);
+  PORTC &= ~(1 << 0);
+  DDRC &= ~(1 << 0);
+  
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  float duration = pulseIn(A0, HIGH);
+  // Calculating the distance
+  float distance= duration*0.034/2;
+  // Prints the distance on the Serial Monitor
+  return distance <= 60;
 }
 
 // A3
 inline bool GetTargetSideRight()
 {
-  return false;
+  // Clears the trigPin
+  DDRC |= (1 << 1);
+  PORTC &= ~(1 << 1);
+  delayMicroseconds(2);
+  PORTC |= (1 << 1);
+  delayMicroseconds(10);
+  PORTC &= ~(1 << 1);
+  DDRC &= ~(1 << 1);
+  
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  float duration = pulseIn(A1, HIGH);
+  // Calculating the distance
+  float distance= duration*0.034/2;
+  // Prints the distance on the Serial Monitor
+  return distance <= 60;
 }
