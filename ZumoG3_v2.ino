@@ -1,4 +1,4 @@
-#pragma GCC optimize ("O3")
+#pragma GCC optimize ("Os")
 
 const bool USE_WHITE_AS_BORDER = true;
 const uint8_t MAX_SPEED = 255;
@@ -27,7 +27,6 @@ enum class State
 
 int main()
 {
-  Serial.begin(9600);
  
   { // Pin and timer configuration
     sei();
@@ -50,11 +49,6 @@ int main()
 
   for(;;)
   {
-    Serial.print("State: ");
-    Serial.println(static_cast<int>(state));
-    //Serial.print(analogRead(A2));
-    //Serial.print(" ");
-    //Serial.println(analogRead(A3));
     switch(state)
     {
       case State::Idle:
@@ -79,7 +73,6 @@ int main()
           const auto return_state = TestAllTransitionsToAvoidingBorders();
           if (return_state != State::None)
           {
-            Serial.println("BORDER");
             state = return_state;
             break;
           }
@@ -88,7 +81,6 @@ int main()
         // Event target detector on left side active
         if (TestTransitionToSeekingSideLeft())
         {
-          Serial.println("SIDE LEFT");
           state = State::SeekingSideLeft;
           break;
         }
@@ -96,7 +88,6 @@ int main()
         // Event target detector on right side active
         if (TestTransitionToSeekingSideRight())
         {
-          Serial.println("SIDE RIGHT");
           state = State::SeekingSideRight;
           break;
         }
@@ -104,7 +95,6 @@ int main()
         // Event target detector on left center active
         if (TestTransitionToSeekingCenterLeft())
         {
-          Serial.println("CENTER LEFT");
           state = State::SeekingCenterLeft;
           break;
         }
@@ -112,12 +102,9 @@ int main()
         // Event target detector on right center active
         if (TestTransitionToSeekingCenterRight())
         {
-          Serial.println("CENTER RIGHT");
           state = State::SeekingCenterRight;
           break;
         }
-
-        //Serial.println("NONE");
         break;
         
       case State::SeekingSideLeft:
@@ -172,7 +159,6 @@ int main()
         break;
         
       case State::SeekingCenterLeft:
-      Serial.println("Left");
         { // Scope for detecting borders
           // Event border detector on both sides
           const auto return_state = TestAllTransitionsToAvoidingBorders();
@@ -206,7 +192,6 @@ int main()
       
         break;
       case State::SeekingCenterRight:
-      Serial.println("Right");
         { // Scope for detecting borders
           // Event border detector on both sides
           const auto return_state = TestAllTransitionsToAvoidingBorders();
