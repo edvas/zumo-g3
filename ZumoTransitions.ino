@@ -5,7 +5,7 @@ inline bool TestTransitionToStarting()
 {
   if (((PINB >> 4) & 0b1) == 0b0)
   {
-    g_timer_start = millis();
+    g_timer_start = micros();
     return true;
   }
   else
@@ -16,7 +16,7 @@ inline bool TestTransitionToStarting()
 
 inline bool TestTransitionToSeekingForward(const uint64_t duration)
 {
-  if(millis() - g_timer_start >= duration)
+  if(micros() - g_timer_start >= duration)
   {
     SetDriveDirectionToForward();
     SetDriveSpeed(255);
@@ -90,7 +90,7 @@ inline bool TestTransitionToAvoidingBorderOnLeftMovingBackwards(const uint8_t de
 {
   if(((detected_borders >> 0) & 0b1) == 0b1)
   {
-    g_timer_start = millis();
+    g_timer_start = micros();
     SetDriveDirectionToBackward();
     SetDriveSpeed(255);
     return true;
@@ -103,7 +103,7 @@ inline bool TestTransitionToAvoidingBorderOnLeftMovingBackwards(const uint8_t de
 
 inline bool TestTransitionToAvoidingBorderOnLeftTurning(const uint64_t duration)
 {
-  if(millis() - g_timer_start >= duration)
+  if(micros() - g_timer_start >= duration)
   {
     SetDriveDirectionToSpinRight();
     SetDriveSpeed(255);
@@ -119,7 +119,7 @@ inline bool TestTransitionToAvoidingBorderOnRightMovingBackwards(const uint8_t d
 {
   if(((detected_borders >> 1) & 0b1) == 0b1)
   {
-    g_timer_start = millis();
+    g_timer_start = micros();
     SetDriveDirectionToBackward();
     SetDriveSpeed(255);
     return true;
@@ -132,7 +132,7 @@ inline bool TestTransitionToAvoidingBorderOnRightMovingBackwards(const uint8_t d
 
 inline bool TestTransitionToAvoidingBorderOnRightTurning(const uint64_t duration)
 {
-  if(millis() - g_timer_start >= duration)
+  if(micros() - g_timer_start >= duration)
   {
     SetDriveDirectionToSpinLeft();
     SetDriveSpeed(255);
@@ -148,7 +148,7 @@ inline bool TestTransitionToAvoidingBorderInFrontMovingBackwards(const uint8_t d
 {
   if(((detected_borders >> 0) & 0b11) == 0b11)
   {
-    g_timer_start = millis();
+    g_timer_start = micros();
     SetDriveDirectionToBackward();
     SetDriveSpeed(255);
     return true;
@@ -161,9 +161,8 @@ inline bool TestTransitionToAvoidingBorderInFrontMovingBackwards(const uint8_t d
 
 inline bool TestTransitionToAvoidingBorderInFrontTurning(const uint64_t duration)
 {
-  if(millis() - g_timer_start >= duration)
+  if(micros() - g_timer_start >= duration)
   {
-    g_timer_start = millis();
     SetDriveDirectionToSpinRight();
     SetDriveSpeed(255);
     return true;

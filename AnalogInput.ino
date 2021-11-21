@@ -1,3 +1,6 @@
+uint8_t AI2_value = 0;
+uint8_t AI3_value = 0;
+
 constexpr uint8_t AI_ADMUX_FLAGS = (1 << REFS0) | (1 << ADLAR);
 
 enum class AnalogInput
@@ -7,9 +10,6 @@ enum class AnalogInput
 };
 
 static AnalogInput analog_pin = AnalogInput::AI2;
-
-uint8_t AI2_value = 0;
-uint8_t AI3_value = 0;
 
 void ReadAnalogInputs()
 { 

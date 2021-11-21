@@ -175,54 +175,26 @@ inline uint8_t GetDetectedBorders()
 }
 
 
-// A4
+// A2
 inline bool GetTargetCenterLeft()
 {
-  return AI2_value >= 50;
-}
-
-// A5
-inline bool GetTargetCenterRight()
-{
-  return AI3_value >= 50;
-}
-
-// A2
-inline bool GetTargetSideLeft()
-{
-  // Clears the trigPin
-  DDRC |= (1 << 0);
-  PORTC &= ~(1 << 0);
-  delayMicroseconds(2);
-  PORTC |= (1 << 0);
-  delayMicroseconds(10);
-  PORTC &= ~(1 << 0);
-  DDRC &= ~(1 << 0);
-  
-  // Reads the echoPin, returns the sound wave travel time in microseconds
-  float duration = pulseIn(A0, HIGH);
-  // Calculating the distance
-  float distance= duration*0.034/2;
-  // Prints the distance on the Serial Monitor
-  return distance <= 60;
+  return AI2_value >= RANGE_CENTER;
 }
 
 // A3
+inline bool GetTargetCenterRight()
+{
+  return AI3_value >= RANGE_CENTER;
+}
+
+// A0
+inline bool GetTargetSideLeft()
+{
+  return UDI0_value_cm <= RANGE_SIDE_CM;
+}
+
+// A1
 inline bool GetTargetSideRight()
 {
-  // Clears the trigPin
-  DDRC |= (1 << 1);
-  PORTC &= ~(1 << 1);
-  delayMicroseconds(2);
-  PORTC |= (1 << 1);
-  delayMicroseconds(10);
-  PORTC &= ~(1 << 1);
-  DDRC &= ~(1 << 1);
-  
-  // Reads the echoPin, returns the sound wave travel time in microseconds
-  float duration = pulseIn(A1, HIGH);
-  // Calculating the distance
-  float distance= duration*0.034/2;
-  // Prints the distance on the Serial Monitor
-  return distance <= 60;
+  return UDI1_value_cm <= RANGE_SIDE_CM;
 }
