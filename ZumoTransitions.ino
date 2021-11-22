@@ -32,8 +32,11 @@ inline bool TestTransitionToSeekingSideLeft()
 {
   if(GetTargetSideLeft())
   {
-    SetDriveDirectionToSpinRight();
-    SetDriveSpeed(127);
+    //SetDriveDirectionToSpinLeft();
+    //SetDriveSpeed(127);
+    SetDriveDirectionToForward();
+    SetDriveSpeedLeftBelt(63);
+    SetDriveSpeedRightBelt(200);
     return true;
   }
   else
@@ -46,8 +49,11 @@ inline bool TestTransitionToSeekingSideRight()
 {
   if(GetTargetSideRight())
   {
-    SetDriveDirectionToSpinLeft();
-    SetDriveSpeed(127);
+    //SetDriveDirectionToSpinRight();
+    //SetDriveSpeed(127);
+    SetDriveDirectionToForward();
+    SetDriveSpeedLeftBelt(200);
+    SetDriveSpeedRightBelt(63);
     return true;
   }
   else

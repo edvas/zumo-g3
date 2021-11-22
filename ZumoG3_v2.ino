@@ -1,8 +1,10 @@
 #pragma GCC optimize ("Os")
 
 //#define Z3_DEBUG
+//#define Z3_DEBUG_ONE_LINE
 //#define Z3_DEBUG_PRINT_AI
 //#define Z3_DEBUG_PRINT_UDI
+//#define Z3_DEBUG_STATE
 
 #define Z3_FEATURE_SEEK_SIDE
 
@@ -11,7 +13,7 @@ const uint8_t MAX_SPEED = 255;
 const uint8_t NO_SPEED = 0;
 
 const uint8_t RANGE_SIDE_CM = 50;
-const uint8_t RANGE_CENTER = 50;
+const uint8_t RANGE_CENTER = 65;
 
 constexpr uint64_t UDI_TIMEOUT = RANGE_SIDE_CM * 90;
 constexpr uint64_t MS = 1000;
@@ -60,7 +62,7 @@ int main()
     
     SetPinModes();
     
-    { // Set up timer 0 for millis()
+    { // Set up timer 0 for micros()
       // Disable PWM
       TCCR0A |= (1 << WGM01) | (1 << WGM00);
   
@@ -77,17 +79,36 @@ int main()
   for(;;)
   {
     #ifdef Z3_DEBUG_PRINT_AI
+      Serial.print("AI: ");
       Serial.print(AI2_value);
       Serial.print(" ");
       Serial.println(AI3_value);
     #endif
 
     #ifdef Z3_DEBUG_PRINT_UDI
+      Serial.print("UDI: ");
       Serial.print(UDI0_value_cm);
       Serial.print(" ");
       Serial.println(UDI1_value_cm);
     #endif
-       
+
+    #ifdef Z3_DEBUG_STATE
+      Serial.print("State: ");
+      Serial.println(static_cast<int>(state));
+    #endif
+
+    #ifdef Z3_DEBUG_ONE_LINE
+      Serial.print(AI2_value);
+      Serial.print(">");
+      Serial.print(AI3_value);
+      Serial.print(">");
+      Serial.print(UDI0_value_cm);
+      Serial.print(">");
+      Serial.print(UDI1_value_cm);
+      Serial.print(">");
+      Serial.println(static_cast<int>(state));
+    #endif
+    
     ReadAnalogInputs();
 
     #ifdef Z3_FEATURE_SEEK_SIDE
@@ -107,9 +128,10 @@ int main()
         
       case State::Starting:
         // Event timeout
-        if (TestTransitionToSeekingForward(5000))
+        if (TestTransitionToSeekingForward(5000 * MS))
         {
           state = State::SeekingForward;
+          _delay_ms(1000);
         }
         break;
         
