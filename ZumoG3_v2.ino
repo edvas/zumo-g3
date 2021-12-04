@@ -1,50 +1,55 @@
 #pragma GCC optimize ("Os")
 
 //#define Z3_DEBUG
-//#define Z3_DEBUG_ONE_LINE
-//#define Z3_DEBUG_PRINT_AI
-//#define Z3_DEBUG_PRINT_UDI
 //#define Z3_DEBUG_STATE
 
-#define Z3_FEATURE_SEEK_SIDE
+// Variables for speed
+const uint8_t kForwardSpeed = 255;
+const uint8_t kBackwardSpeed = 255;
+const uint8_t kSpinSpeedAvoidingSide = 255;
+const uint8_t kSpinSpeedAvoidingFront = 255;
+const uint8_t kFastTurnSpeedFastTrack = 200;
+const uint8_t kFastTurnSpeedSlowTrack = 63;
+const uint8_t kSlowTurnSpeedFastTrack = 255;
+const uint8_t kSlowTurnSpeedSlowTrack = 127;
 
-const bool USE_WHITE_AS_BORDER = true;
-const uint8_t MAX_SPEED = 255;
-const uint8_t NO_SPEED = 0;
+// Variables for duration
+const uint64_t kMilliseconds = 1000; // Unit: ms
+const uint64_t kStartDelayDuration = 5000 * kMilliseconds; // Unit: ms * ms = us
+const uint64_t kNoUpdateStartDuration = 1000 * kMilliseconds; // Unit: ms * ms = us
+const uint64_t kAvoidingSideBorderBackingDuration = 200 * kMilliseconds; // Unit: ms * ms = us
+const uint64_t kAvoidingFrontBorderBackingDuration = 200 * kMilliseconds; // Unit: ms * ms = us
+const uint64_t kAvoidingBorderTurnDuration = 400 * kMilliseconds; // Unit: ms * ms = us
 
-const uint8_t RANGE_SIDE_CM = 50;
-const uint8_t RANGE_CENTER = 65;
+// Variables for sensors
+const bool kUseWhiteAsBorderColor = true;
+const uint8_t kRangeCenterInverse = 65;
+const uint8_t kRangeSide = 50; // Unit: cm
 
-constexpr uint64_t UDI_TIMEOUT = RANGE_SIDE_CM * 90;
-constexpr uint64_t MS = 1000;
+constexpr float kUltrasonicRangeSearchMultiplier = 1.5f; // Ex. value of 1.5f equals +50% search range
+constexpr float kSpeedOfSound = 0.034f; // Unit: cm/us
+constexpr float kUltrasonicRoundTripDurationCorrection = 2.0f; // Unit: none, math constant
 
+constexpr uint64_t kUltrasonicTimeToDistanceDivisor = kUltrasonicRoundTripDurationCorrection / kSpeedOfSound; // Unit: us/cm
+constexpr uint64_t kUltrasonicTimeout = kUltrasonicRangeSearchMultiplier * kRangeSide * kUltrasonicTimeToDistanceDivisor; // Unit: us
 
-extern uint8_t AI2_value;
-extern uint8_t AI3_value;
-
-extern uint8_t UDI0_value_cm;
-extern uint8_t UDI1_value_cm;
-
+// States for the state machine implementation
 enum class State
 {
-  None,
+  kNone,
   
-  Idle,
-  Starting,
+  kIdle,
+  kStarting,
+  kMovingBlind,
 
-  SeekingForward,
-  SeekingSideLeft,
-  SeekingSideRight,
-  SeekingCenterLeft,
-  SeekingCenterRight,
+  kSeeking,
   
-  AvoidingBorderOnLeftMovingBackwards,
-  AvoidingBorderOnLeftTurning,
-  AvoidingBorderOnRightMovingBackwards,
-  AvoidingBorderOnRightTurning,
-  AvoidingBorderInFrontMovingBackwards,
-  AvoidingBorderInFrontTurning,
+  kAvoidingBorderOnLeftMovingBackwards,
+  kAvoidingBorderOnRightMovingBackwards,
+  kAvoidingBorderInFrontMovingBackwards,
+  kAvoidingBorderTurning,
 };
+
 
 int main()
 {
@@ -54,167 +59,117 @@ int main()
     Serial.begin(9600);
   #endif
 
-  // Enable interrupts
-  sei();
-
-  { // Pin and timer configuration
-
-    
-    SetPinModes();
-    
-    { // Set up timer 0 for micros()
-      // Disable PWM
-      TCCR0A |= (1 << WGM01) | (1 << WGM00);
+  Setup();
   
-      // Set timer 0 prescale factor to 64
-      TCCR0B |= (1 << CS01) | (1 << CS00);
-    
-      // Enable timer 0 overflow interrupt
-      TIMSK0 |= (1 << TOIE0);
-    }
-  }
+  State state = State::kIdle;
 
-  State state = State::Idle;
-
+  // Loop
   for(;;)
   {
-    #ifdef Z3_DEBUG_PRINT_AI
-      Serial.print("AI: ");
-      Serial.print(AI2_value);
-      Serial.print(" ");
-      Serial.println(AI3_value);
-    #endif
-
-    #ifdef Z3_DEBUG_PRINT_UDI
-      Serial.print("UDI: ");
-      Serial.print(UDI0_value_cm);
-      Serial.print(" ");
-      Serial.println(UDI1_value_cm);
-    #endif
-
     #ifdef Z3_DEBUG_STATE
       Serial.print("State: ");
-      Serial.println(static_cast<int>(state));
-    #endif
-
-    #ifdef Z3_DEBUG_ONE_LINE
-      Serial.print(AI2_value);
-      Serial.print(">");
-      Serial.print(AI3_value);
-      Serial.print(">");
-      Serial.print(UDI0_value_cm);
-      Serial.print(">");
-      Serial.print(UDI1_value_cm);
-      Serial.print(">");
       Serial.println(static_cast<int>(state));
     #endif
     
     ReadAnalogInputs();
 
-    #ifdef Z3_FEATURE_SEEK_SIDE
-      ReadUltrasonicDistanceInputs();
-    #endif
+    ReadUltrasonicDistanceInputs();
 
     // State machine
     switch(state)
     {
-      case State::Idle:
+      case State::kIdle:
         // Event start button pressed
-        if (TestTransitionToStarting())
+        if (CanTransitionToStarting())
         {
-          state = State::Starting;
+          state = State::kStarting;
         }
         break;
         
-      case State::Starting:
+      case State::kStarting:
         // Event timeout
-        if (TestTransitionToSeekingForward(5000 * MS))
+        if (CanTransitionToSeekingForward(kStartDelayDuration))
         {
-          state = State::SeekingForward;
-          _delay_ms(1000);
-        }
-        break;
-        
-      case State::SeekingForward:
-      case State::SeekingSideLeft:
-      case State::SeekingSideRight:   
-      case State::SeekingCenterLeft:
-      case State::SeekingCenterRight:
-        { // Scope for detecting borders
-          // Event border detector on both sides
-          const auto return_state = TestAllTransitionsToAvoidingBorders();
-          if (return_state != State::None)
-          {
-            state = return_state;
-            break;
-          }
+          state = State::kMovingBlind;
         }
 
-        #ifdef Z3_FEATURE_SEEK_SIDE
-          // Event target detector on left side active
-          if (TestTransitionToSeekingSideLeft())
-          {
-            state = State::SeekingSideLeft;
-            break;
-          }
-  
-          // Event target detector on right side active
-          if (TestTransitionToSeekingSideRight())
-          {
-            state = State::SeekingSideRight;
-            break;
-          }
-        #endif
+        break;
+
+      case State::kMovingBlind:
+        _delay_ms(kNoUpdateStartDuration);
+        state = State::kSeeking;
+        break;
+      
+      case State::kSeeking:
+        // Event border detector on both sides
+        const auto return_state = CanTransitionToAvoidingBorder();
+        if (return_state != State::kNone)
+        {
+          state = return_state;
+          break;
+        }
+
+        // Event target detector on left side active
+        if (CanTransitionToSeekingSideLeft())
+        {
+          state = State::kSeeking;
+          break;
+        }
+
+        // Event target detector on right side active
+        if (CanTransitionToSeekingSideRight())
+        {
+          state = State::kSeeking;
+          break;
+        }
         
         // Event target detector on left center active
-        if (TestTransitionToSeekingCenterLeft())
+        if (CanTransitionToSeekingCenterLeft())
         {
-          state = State::SeekingCenterLeft;
+          state = State::kSeeking;
           break;
         }
 
         // Event target detector on right center active
-        if (TestTransitionToSeekingCenterRight())
+        if (CanTransitionToSeekingCenterRight())
         {
-          state = State::SeekingCenterRight;
+          state = State::kSeeking;
           break;
         }
         break;
 
-      case State::AvoidingBorderOnLeftMovingBackwards:
+      case State::kAvoidingBorderOnLeftMovingBackwards:
         // Event timeout
-        if (TestTransitionToAvoidingBorderOnLeftTurning(200 * MS))
+        if (CanTransitionToAvoidingBorderOnLeftTurning(kAvoidingSideBorderBackingDuration))
         {
-          state = State::AvoidingBorderOnLeftTurning;
+          state = State::kAvoidingBorderTurning;
         }
         break;
       
-      case State::AvoidingBorderOnRightMovingBackwards:
+      case State::kAvoidingBorderOnRightMovingBackwards:
         // Event timeout
-        if (TestTransitionToAvoidingBorderOnRightTurning(200 * MS))
+        if (CanTransitionToAvoidingBorderOnRightTurning(kAvoidingSideBorderBackingDuration))
         {
-          state = State::AvoidingBorderOnRightTurning;
+          state = State::kAvoidingBorderTurning;
         }
         break;
 
-      case State::AvoidingBorderInFrontMovingBackwards:
+      case State::kAvoidingBorderInFrontMovingBackwards:
         // Event timeout
-        if (TestTransitionToAvoidingBorderInFrontTurning(200 * MS))
+        if (CanTransitionToAvoidingBorderInFrontTurning(kAvoidingFrontBorderBackingDuration))
         {
-          state = State::AvoidingBorderInFrontTurning;
+          state = State::kAvoidingBorderTurning;
         }
         break;
 
-      case State::AvoidingBorderOnLeftTurning:
-      case State::AvoidingBorderOnRightTurning:
-      case State::AvoidingBorderInFrontTurning:
+      case State::kAvoidingBorderTurning:
         // Event timeout
-        if (TestTransitionToSeekingForward(400 * MS))
+        if (CanTransitionToSeekingForward(kAvoidingBorderTurnDuration))
         {
-          state = State::SeekingForward;
+          state = State::kSeeking;
         }
         break;
-      
+        
       default:
         break;
     };
