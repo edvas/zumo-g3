@@ -15,9 +15,9 @@ void ReadUltrasonicDistanceInputs()
   DDRC &= ~(1 << 0);
 
   // Reads the echoPin, returns the sound wave travel time in microseconds
-  uint16_t duration = pulseIn(A0, HIGH, UDI_TIMEOUT);
+  uint16_t duration = pulseIn(A0, HIGH, kUltrasonicTimeout);
   // Calculating the distance
-  UDI0_value_cm = (duration / 59) - 1;
+  UDI0_value_cm = (duration / kUltrasonicTimeToDistanceDivisor) - 1;
 
 
   // Clears the trigPin
@@ -30,7 +30,7 @@ void ReadUltrasonicDistanceInputs()
   DDRC &= ~(1 << 1);
 
   // Reads the echoPin, returns the sound wave travel time in microseconds
-  duration = pulseIn(A1, HIGH, UDI_TIMEOUT);
+  duration = pulseIn(A1, HIGH, kUltrasonicTimeout);
   // Calculating the distance
-  UDI1_value_cm = (duration / 59) - 1;
+  UDI1_value_cm = (duration / kUltrasonicTimeToDistanceDivisor) - 1;
 }
