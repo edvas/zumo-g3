@@ -1,7 +1,8 @@
+
 // Single variable used to store the starting time for the transitions that are time based
 static uint64_t g_timer_start = 0uL;
 
-inline bool TestTransitionToStarting()
+inline bool CanTransitionToStarting()
 {
   if (((PINB >> 4) & 0b1) == 0b0)
   {
@@ -14,12 +15,12 @@ inline bool TestTransitionToStarting()
   }
 }
 
-inline bool TestTransitionToSeekingForward(const uint64_t duration)
+inline bool CanTransitionToSeekingForward(const uint64_t duration)
 {
   if(micros() - g_timer_start >= duration)
   {
     SetDriveDirectionToForward();
-    SetDriveSpeed(255);
+    SetDriveSpeed(kForwardSpeed);
     return true;
   }
   else
@@ -28,15 +29,13 @@ inline bool TestTransitionToSeekingForward(const uint64_t duration)
   }
 }
 
-inline bool TestTransitionToSeekingSideLeft()
+inline bool CanTransitionToSeekingSideLeft()
 {
   if(GetTargetSideLeft())
   {
-    //SetDriveDirectionToSpinLeft();
-    //SetDriveSpeed(127);
     SetDriveDirectionToForward();
-    SetDriveSpeedLeftBelt(63);
-    SetDriveSpeedRightBelt(200);
+    SetDriveSpeedLeftBelt(kFastTurnSpeedSlowTrack);
+    SetDriveSpeedRightBelt(kFastTurnSpeedFastTrack);
     return true;
   }
   else
@@ -45,15 +44,13 @@ inline bool TestTransitionToSeekingSideLeft()
   }
 }
 
-inline bool TestTransitionToSeekingSideRight()
+inline bool CanTransitionToSeekingSideRight()
 {
   if(GetTargetSideRight())
   {
-    //SetDriveDirectionToSpinRight();
-    //SetDriveSpeed(127);
     SetDriveDirectionToForward();
-    SetDriveSpeedLeftBelt(200);
-    SetDriveSpeedRightBelt(63);
+    SetDriveSpeedLeftBelt(kFastTurnSpeedFastTrack);
+    SetDriveSpeedRightBelt(kFastTurnSpeedSlowTrack);
     return true;
   }
   else
@@ -62,13 +59,13 @@ inline bool TestTransitionToSeekingSideRight()
   }
 }
 
-inline bool TestTransitionToSeekingCenterLeft()
+inline bool CanTransitionToSeekingCenterLeft()
 {
   if(GetTargetCenterLeft())
   {
     SetDriveDirectionToForward();
-    SetDriveSpeedLeftBelt(127);
-    SetDriveSpeedRightBelt(255);
+    SetDriveSpeedLeftBelt(kSlowTurnSpeedSlowTrack);
+    SetDriveSpeedRightBelt(kSlowTurnSpeedFastTrack);
     return true;
   }
   else
@@ -77,13 +74,13 @@ inline bool TestTransitionToSeekingCenterLeft()
   }
 }
 
-inline bool TestTransitionToSeekingCenterRight()
+inline bool CanTransitionToSeekingCenterRight()
 {
   if(GetTargetCenterRight())
   {
     SetDriveDirectionToForward();
-    SetDriveSpeedLeftBelt(255);
-    SetDriveSpeedRightBelt(127);
+    SetDriveSpeedLeftBelt(kSlowTurnSpeedFastTrack);
+    SetDriveSpeedRightBelt(kSlowTurnSpeedSlowTrack);
     return true;
   }
   else
@@ -92,13 +89,13 @@ inline bool TestTransitionToSeekingCenterRight()
   }
 }
 
-inline bool TestTransitionToAvoidingBorderOnLeftMovingBackwards(const uint8_t detected_borders)
+inline bool CanTransitionToAvoidingBorderOnLeftMovingBackwards(const uint8_t detected_borders)
 {
   if(((detected_borders >> 0) & 0b1) == 0b1)
   {
     g_timer_start = micros();
     SetDriveDirectionToBackward();
-    SetDriveSpeed(255);
+    SetDriveSpeed(kBackwardSpeed);
     return true;
   }
   else
@@ -107,12 +104,12 @@ inline bool TestTransitionToAvoidingBorderOnLeftMovingBackwards(const uint8_t de
   }
 }
 
-inline bool TestTransitionToAvoidingBorderOnLeftTurning(const uint64_t duration)
+inline bool CanTransitionToAvoidingBorderOnLeftTurning(const uint64_t duration)
 {
   if(micros() - g_timer_start >= duration)
   {
     SetDriveDirectionToSpinRight();
-    SetDriveSpeed(255);
+    SetDriveSpeed(kSpinSpeedAvoidingSide);
     return true;
   }
   else
@@ -121,13 +118,13 @@ inline bool TestTransitionToAvoidingBorderOnLeftTurning(const uint64_t duration)
   }
 }
 
-inline bool TestTransitionToAvoidingBorderOnRightMovingBackwards(const uint8_t detected_borders)
+inline bool CanTransitionToAvoidingBorderOnRightMovingBackwards(const uint8_t detected_borders)
 {
   if(((detected_borders >> 1) & 0b1) == 0b1)
   {
     g_timer_start = micros();
     SetDriveDirectionToBackward();
-    SetDriveSpeed(255);
+    SetDriveSpeed(kBackwardSpeed);
     return true;
   }
   else
@@ -136,12 +133,12 @@ inline bool TestTransitionToAvoidingBorderOnRightMovingBackwards(const uint8_t d
   }
 }
 
-inline bool TestTransitionToAvoidingBorderOnRightTurning(const uint64_t duration)
+inline bool CanTransitionToAvoidingBorderOnRightTurning(const uint64_t duration)
 {
   if(micros() - g_timer_start >= duration)
   {
     SetDriveDirectionToSpinLeft();
-    SetDriveSpeed(255);
+    SetDriveSpeed(kSpinSpeedAvoidingSide);
     return true;
   }
   else
@@ -150,13 +147,13 @@ inline bool TestTransitionToAvoidingBorderOnRightTurning(const uint64_t duration
   }
 }
 
-inline bool TestTransitionToAvoidingBorderInFrontMovingBackwards(const uint8_t detected_borders)
+inline bool CanTransitionToAvoidingBorderInFrontMovingBackwards(const uint8_t detected_borders)
 {
   if(((detected_borders >> 0) & 0b11) == 0b11)
   {
     g_timer_start = micros();
     SetDriveDirectionToBackward();
-    SetDriveSpeed(255);
+    SetDriveSpeed(kBackwardSpeed);
     return true;
   }
   else
@@ -165,12 +162,12 @@ inline bool TestTransitionToAvoidingBorderInFrontMovingBackwards(const uint8_t d
   }
 }
 
-inline bool TestTransitionToAvoidingBorderInFrontTurning(const uint64_t duration)
+inline bool CanTransitionToAvoidingBorderInFrontTurning(const uint64_t duration)
 {
   if(micros() - g_timer_start >= duration)
   {
     SetDriveDirectionToSpinRight();
-    SetDriveSpeed(255);
+    SetDriveSpeed(kSpinSpeedAvoidingFront);
     return true;
   }
   else
@@ -179,27 +176,27 @@ inline bool TestTransitionToAvoidingBorderInFrontTurning(const uint64_t duration
   }
 }
 
-inline State TestAllTransitionsToAvoidingBorders()
+inline State CanTransitionToAvoidingBorder()
 {
   const uint8_t detected_borders = GetDetectedBorders();
           
   // Event border detector on both sides
-  if (TestTransitionToAvoidingBorderInFrontMovingBackwards(detected_borders))
+  if (CanTransitionToAvoidingBorderInFrontMovingBackwards(detected_borders))
   {
-    return State::AvoidingBorderInFrontMovingBackwards;
+    return State::kAvoidingBorderInFrontMovingBackwards;
   }
   
   // Event border detector on right side
-  if (TestTransitionToAvoidingBorderOnRightMovingBackwards(detected_borders))
+  if (CanTransitionToAvoidingBorderOnRightMovingBackwards(detected_borders))
   {
-    return State::AvoidingBorderOnRightMovingBackwards;
+    return State::kAvoidingBorderOnRightMovingBackwards;
   }
 
   // Event border detector on left side
-  if (TestTransitionToAvoidingBorderOnLeftMovingBackwards(detected_borders))
+  if (CanTransitionToAvoidingBorderOnLeftMovingBackwards(detected_borders))
   {
-    return State::AvoidingBorderOnLeftMovingBackwards;
+    return State::kAvoidingBorderOnLeftMovingBackwards;
   }
           
-  return State::None;
+  return State::kNone;
 }
