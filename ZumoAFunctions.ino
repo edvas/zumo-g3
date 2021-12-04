@@ -1,12 +1,12 @@
-extern const bool USE_WHITE_AS_BORDER;
-extern const uint8_t MAX_SPEED;
-extern const uint8_t NO_SPEED;
 
 // Atmega328p datasheet:
 // https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf
  
-inline void SetPinModes()
+inline void Setup()
 {
+  // Enable interrupts
+  sei();
+  
   // Set pin 3 (buzzer),
   //         7 (right belt direction) to OUTPUT
   DDRD |= (1 << 3) | (1 << 7);
@@ -34,6 +34,17 @@ inline void SetPinModes()
   // ADC
   ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
   ADCSRA |= 1 << ADEN;
+
+  { // Set up timer 0 for the micros() function
+    // Disable PWM on pin 5 and 6
+    TCCR0A |= (1 << WGM01) | (1 << WGM00);
+
+    // Set timer 0 prescale factor to 64
+    TCCR0B |= (1 << CS01) | (1 << CS00);
+  
+    // Enable timer 0 overflow interrupt
+    TIMSK0 |= (1 << TOIE0);
+  }
 }
 
 inline void SetDriveDirectionToForward()
@@ -164,7 +175,7 @@ inline void SetDriveSpeedRightBelt(const uint8_t a_speed)
 // bit0 = border detected on left, bit1 = border detected on right
 inline uint8_t GetDetectedBorders()
 {
-  if (USE_WHITE_AS_BORDER)
+  if (kUseWhiteAsBorderColor)
   {
     return ~(PIND >> 4) & 0b11;
   }
@@ -174,27 +185,26 @@ inline uint8_t GetDetectedBorders()
   }
 }
 
-
 // A2
 inline bool GetTargetCenterLeft()
 {
-  return AI2_value >= RANGE_CENTER;
+  return AI2_value >= kRangeCenterInverse;
 }
 
 // A3
 inline bool GetTargetCenterRight()
 {
-  return AI3_value >= RANGE_CENTER;
+  return AI3_value >= kRangeCenterInverse;
 }
 
 // A0
 inline bool GetTargetSideLeft()
 {
-  return UDI0_value_cm <= RANGE_SIDE_CM;
+  return UDI0_value_cm <= kRangeSide;
 }
 
 // A1
 inline bool GetTargetSideRight()
 {
-  return UDI1_value_cm <= RANGE_SIDE_CM;
+  return UDI1_value_cm <= kRangeSide;
 }
