@@ -49,39 +49,39 @@ inline void Setup()
 
 inline void SetDriveDirectionToForward()
 {
-  // Set pin 7 (Right belt) to LOW (Forward)
+  // Set pin 7 (right belt) to LOW (forward)
   PORTD &= ~(1 << 7);
-  // Set pin 8 (Left belt) to LOW (Forward)
+  // Set pin 8 (left belt) to LOW (forward)
   PORTB &= ~(1 << 0);
 }
 
 inline void SetDriveDirectionToBackward()
 {
-  // Set pin 7 (Right belt) to HIGH (Backward)
+  // Set pin 7 (right belt) to HIGH (backward)
   PORTD |= (1 << 7);
-  // Set pin 8 (Left belt) to HIGH (Backward)
+  // Set pin 8 (left belt) to HIGH (backward)
   PORTB |= (1 << 0);
 }
 
 inline void SetDriveDirectionToSpinLeft()
 {
-  // Set pin 7 (Right belt) to LOW (Forward)
+  // Set pin 7 (right belt) to LOW (forward)
   PORTD &= ~(1 << 7);
-  // Set pin 8 (Left belt) to HIGH (Backward)
+  // Set pin 8 (left belt) to HIGH (backward)
   PORTB |= (1 << 0);
 }
 
 inline void SetDriveDirectionToSpinRight()
 {
-  // Set pin 7 (Right belt) to HIGH (Backward)
+  // Set pin 7 (right belt) to HIGH (backward)
   PORTD |= (1 << 7);
-  // Set pin 8 (Left belt) to LOW (Forward)
+  // Set pin 8 (left belt) to LOW (forward)
   PORTB &= ~(1 << 0);
 }
 
-inline void SetDriveSpeed(const uint8_t a_speed)
+inline void SetDriveSpeed(const uint8_t t_speed)
 {
-  if (a_speed == 0)
+  if (t_speed == 0)
   {
     // Set pin  9 (right belt speed),
     //         10 (left belt speed) to not use PWM
@@ -91,7 +91,7 @@ inline void SetDriveSpeed(const uint8_t a_speed)
     //         10 (left belt speed) to LOW (no speed)
     PORTB &= ~((1 << 1) | (1 << 2));
   }
-  else if (a_speed == 255)
+  else if (t_speed == 255)
   {
     // Set pin  9 (right belt speed),
     //         10 (left belt speed) to not use PWM
@@ -108,16 +108,16 @@ inline void SetDriveSpeed(const uint8_t a_speed)
     TCCR1A |= (1 << COM1A1) | (1 << COM1B1);
     
     // Set pin 9 (right belt speed) PWM duty
-    OCR1A = a_speed;
+    OCR1A = t_speed;
    
     // Set pin 10 (left belt speed) PWM duty
-    OCR1B = a_speed;
+    OCR1B = t_speed;
   }
 }
 
-inline void SetDriveSpeedLeftBelt(const uint8_t a_speed)
+inline void SetDriveSpeedLeftBelt(const uint8_t t_speed)
 {
-  if (a_speed == 0)
+  if (t_speed == 0)
   {
     // Set pin 10 (left belt speed) to not use PWM
     TCCR1A &= ~(1 << COM1B1);
@@ -125,7 +125,7 @@ inline void SetDriveSpeedLeftBelt(const uint8_t a_speed)
     // Set pin 10 (left belt speed) to LOW (no speed)
     PORTB &= ~(1 << 2);
   }
-  else if (a_speed == 255)
+  else if (t_speed == 255)
   {
     // Set pin 10 (left belt speed) to not use PWM
     TCCR1A &= ~(1 << COM1B1);
@@ -139,7 +139,7 @@ inline void SetDriveSpeedLeftBelt(const uint8_t a_speed)
     TCCR1A |= 1 << COM1B1;
     
     // Set pin 10 (left belt speed) PWM duty
-    OCR1B = a_speed;
+    OCR1B = t_speed;
   }
 }
 
