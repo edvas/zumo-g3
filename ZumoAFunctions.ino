@@ -143,7 +143,6 @@ inline void SetDriveSpeedLeftBelt(const uint8_t a_speed)
   }
 }
 
-// Changes io pin 9 and uses TIMER1A
 inline void SetDriveSpeedRightBelt(const uint8_t a_speed)
 {
   if (a_speed == 0)
@@ -172,7 +171,12 @@ inline void SetDriveSpeedRightBelt(const uint8_t a_speed)
   }
 }
 
-// bit0 = border detected on left, bit1 = border detected on right
+inline bool GetStartButtonIsPressed()
+{
+  return ((PINB >> 4) & 0b1) == 0b0;
+}
+
+// bit0 = true: border detected on left, bit1 = true: border detected on right
 inline uint8_t GetDetectedBorders()
 {
   if (kUseWhiteAsBorderColor)
@@ -185,25 +189,21 @@ inline uint8_t GetDetectedBorders()
   }
 }
 
-// A2
 inline bool GetTargetCenterLeft()
 {
   return AI2_value >= kRangeCenterInverse;
 }
 
-// A3
 inline bool GetTargetCenterRight()
 {
   return AI3_value >= kRangeCenterInverse;
 }
 
-// A0
 inline bool GetTargetSideLeft()
 {
   return UDI0_value_cm <= kRangeSide;
 }
 
-// A1
 inline bool GetTargetSideRight()
 {
   return UDI1_value_cm <= kRangeSide;
