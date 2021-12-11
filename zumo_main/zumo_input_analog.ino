@@ -1,3 +1,4 @@
+// Variables for the analog input values
 uint8_t AI2_value = 0;
 uint8_t AI3_value = 0;
 
@@ -9,7 +10,7 @@ enum class AnalogInput
   AI3,
 };
 
-static AnalogInput analog_pin = AnalogInput::AI2;
+static AnalogInput g_analog_pin = AnalogInput::AI2;
 
 void ReadAnalogInputs()
 { 
@@ -17,7 +18,7 @@ void ReadAnalogInputs()
   if(!((ADCSRA >> ADSC) & 0b1))
   {
     // NOTE: the 'analog_pin' variable can be replaced by reading the first 3 bits in ADMUX
-    switch(analog_pin)
+    switch(g_analog_pin)
     {
     case AnalogInput::AI2:
       // Read the 8-bit value
@@ -25,7 +26,7 @@ void ReadAnalogInputs()
       
       // Set next conversion to AI3
       ADMUX = AI_ADMUX_FLAGS | (3 & 0b111);
-      analog_pin = AnalogInput::AI3;
+      g_analog_pin = AnalogInput::AI3;
       
       // Start next conversion
       ADCSRA |= 1 << ADSC;
@@ -35,9 +36,9 @@ void ReadAnalogInputs()
       // Read the 8-bit value
       AI3_value = ADCH;
       
-      // Set next conversion to AI3
+      // Set next conversion to AI2
       ADMUX = AI_ADMUX_FLAGS | (2 & 0b111);
-      analog_pin = AnalogInput::AI2;
+      g_analog_pin = AnalogInput::AI2;
       
       // Start next conversion
       ADCSRA |= 1 << ADSC;
