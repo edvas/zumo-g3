@@ -15,9 +15,9 @@ inline bool TryTransitionToStarting()
   }
 }
 
-inline bool TryTransitionToMovingBlind(const uint64_t par_duration)
+inline bool TryTransitionToMovingBlind(const uint64_t t_duration)
 {
-  if(micros() - g_transition_timer_start >= par_duration)
+  if(micros() - g_transition_timer_start >= t_duration)
   {
     g_transition_timer_start = micros();
     SetDriveDirectionToForward();
@@ -30,9 +30,9 @@ inline bool TryTransitionToMovingBlind(const uint64_t par_duration)
   }
 }
 
-inline bool TryTransitionToSeekingForward(const uint64_t par_duration)
+inline bool TryTransitionToSeekingForward(const uint64_t t_duration)
 {
-  if(micros() - g_transition_timer_start >= par_duration)
+  if(micros() - g_transition_timer_start >= t_duration)
   {
     SetDriveDirectionToForward();
     SetDriveSpeed(kForwardSpeed);
@@ -104,9 +104,9 @@ inline bool TryTransitionToSeekingCenterRight()
   }
 }
 
-inline bool TryTransitionToAvoidingBorderOnLeftMovingBackwards(const uint8_t par_detected_borders)
+inline bool TryTransitionToAvoidingBorderOnLeftMovingBackwards(const uint8_t t_detected_borders)
 {
-  if(((par_detected_borders >> 0) & 0b1) == 0b1)
+  if(((t_detected_borders >> 0) & 0b1) == 0b1)
   {
     g_transition_timer_start = micros();
     SetDriveDirectionToBackward();
@@ -119,9 +119,9 @@ inline bool TryTransitionToAvoidingBorderOnLeftMovingBackwards(const uint8_t par
   }
 }
 
-inline bool TryTransitionToAvoidingBorderOnLeftTurning(const uint64_t par_duration)
+inline bool TryTransitionToAvoidingBorderOnLeftTurning(const uint64_t t_duration)
 {
-  if(micros() - g_transition_timer_start >= par_duration)
+  if(micros() - g_transition_timer_start >= t_duration)
   {
     SetDriveDirectionToSpinRight();
     SetDriveSpeed(kSpinSpeedAvoidingSide);
@@ -133,9 +133,9 @@ inline bool TryTransitionToAvoidingBorderOnLeftTurning(const uint64_t par_durati
   }
 }
 
-inline bool TryTransitionToAvoidingBorderOnRightMovingBackwards(const uint8_t par_detected_borders)
+inline bool TryTransitionToAvoidingBorderOnRightMovingBackwards(const uint8_t t_detected_borders)
 {
-  if(((par_detected_borders >> 1) & 0b1) == 0b1)
+  if(((t_detected_borders >> 1) & 0b1) == 0b1)
   {
     g_transition_timer_start = micros();
     SetDriveDirectionToBackward();
@@ -148,9 +148,9 @@ inline bool TryTransitionToAvoidingBorderOnRightMovingBackwards(const uint8_t pa
   }
 }
 
-inline bool TryTransitionToAvoidingBorderOnRightTurning(const uint64_t par_duration)
+inline bool TryTransitionToAvoidingBorderOnRightTurning(const uint64_t t_duration)
 {
-  if(micros() - g_transition_timer_start >= par_duration)
+  if(micros() - g_transition_timer_start >= t_duration)
   {
     SetDriveDirectionToSpinLeft();
     SetDriveSpeed(kSpinSpeedAvoidingSide);
@@ -162,9 +162,9 @@ inline bool TryTransitionToAvoidingBorderOnRightTurning(const uint64_t par_durat
   }
 }
 
-inline bool TryTransitionToAvoidingBorderInFrontMovingBackwards(const uint8_t par_detected_borders)
+inline bool TryTransitionToAvoidingBorderInFrontMovingBackwards(const uint8_t t_detected_borders)
 {
-  if(((par_detected_borders >> 0) & 0b11) == 0b11)
+  if(((t_detected_borders >> 0) & 0b11) == 0b11)
   {
     g_transition_timer_start = micros();
     SetDriveDirectionToBackward();
@@ -177,9 +177,9 @@ inline bool TryTransitionToAvoidingBorderInFrontMovingBackwards(const uint8_t pa
   }
 }
 
-inline bool TryTransitionToAvoidingBorderInFrontTurning(const uint64_t par_duration)
+inline bool TryTransitionToAvoidingBorderInFrontTurning(const uint64_t a_duration)
 {
-  if(micros() - g_transition_timer_start >= par_duration)
+  if(micros() - g_transition_timer_start >= a_duration)
   {
     SetDriveDirectionToSpinRight();
     SetDriveSpeed(kSpinSpeedAvoidingFront);
