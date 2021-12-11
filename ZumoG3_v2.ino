@@ -29,7 +29,6 @@ const uint8_t kRangeSide = 50; // Unit: cm
 constexpr float kUltrasonicRangeSearchMultiplier = 1.5f; // Ex. value of 1.5f equals +50% search range
 constexpr float kSpeedOfSound = 0.034f; // Unit: cm/us
 constexpr float kUltrasonicRoundTripDurationCorrection = 2.0f; // Unit: none, math constant
-
 constexpr uint64_t kUltrasonicTimeToDistanceDivisor = kUltrasonicRoundTripDurationCorrection / kSpeedOfSound; // Unit: us/cm
 constexpr uint64_t kUltrasonicTimeout = kUltrasonicRangeSearchMultiplier * kRangeSide * kUltrasonicTimeToDistanceDivisor; // Unit: us
 
@@ -80,7 +79,7 @@ int main()
     {
       case State::kIdle:
         // Event start button pressed
-        if (CanTransitionToStarting())
+        if (TryTransitionToStarting())
         {
           state = State::kStarting;
         }
@@ -88,7 +87,7 @@ int main()
         
       case State::kStarting:
         // Event timeout
-        if (CanTransitionToSeekingForward(kStartDelayDuration))
+        if (TryTransitionToMovingBlind(kStartDelayDuration))
         {
           state = State::kMovingBlind;
         }
@@ -96,13 +95,16 @@ int main()
         break;
 
       case State::kMovingBlind:
-        _delay_ms(kNoUpdateStartDuration);
-        state = State::kSeeking;
+        // Event timeout
+        if (TryTransitionToSeekingForward(kNoUpdateStartDuration))
+        {
+          state = State::kSeeking;
+        }
         break;
       
       case State::kSeeking:
         // Event border detector on both sides
-        const auto return_state = CanTransitionToAvoidingBorder();
+        const auto return_state = TryTransitionToAvoidingBorder();
         if (return_state != State::kNone)
         {
           state = return_state;
@@ -110,28 +112,28 @@ int main()
         }
 
         // Event target detector on left side active
-        if (CanTransitionToSeekingSideLeft())
+        if (TryTransitionToSeekingSideLeft())
         {
           state = State::kSeeking;
           break;
         }
 
         // Event target detector on right side active
-        if (CanTransitionToSeekingSideRight())
+        if (TryTransitionToSeekingSideRight())
         {
           state = State::kSeeking;
           break;
         }
         
         // Event target detector on left center active
-        if (CanTransitionToSeekingCenterLeft())
+        if (TryTransitionToSeekingCenterLeft())
         {
           state = State::kSeeking;
           break;
         }
 
         // Event target detector on right center active
-        if (CanTransitionToSeekingCenterRight())
+        if (TryTransitionToSeekingCenterRight())
         {
           state = State::kSeeking;
           break;
@@ -140,7 +142,7 @@ int main()
 
       case State::kAvoidingBorderOnLeftMovingBackwards:
         // Event timeout
-        if (CanTransitionToAvoidingBorderOnLeftTurning(kAvoidingSideBorderBackingDuration))
+        if (TryTransitionToAvoidingBorderOnLeftTurning(kAvoidingSideBorderBackingDuration))
         {
           state = State::kAvoidingBorderTurning;
         }
@@ -148,7 +150,7 @@ int main()
       
       case State::kAvoidingBorderOnRightMovingBackwards:
         // Event timeout
-        if (CanTransitionToAvoidingBorderOnRightTurning(kAvoidingSideBorderBackingDuration))
+        if (TryTransitionToAvoidingBorderOnRightTurning(kAvoidingSideBorderBackingDuration))
         {
           state = State::kAvoidingBorderTurning;
         }
@@ -156,7 +158,7 @@ int main()
 
       case State::kAvoidingBorderInFrontMovingBackwards:
         // Event timeout
-        if (CanTransitionToAvoidingBorderInFrontTurning(kAvoidingFrontBorderBackingDuration))
+        if (TryTransitionToAvoidingBorderInFrontTurning(kAvoidingFrontBorderBackingDuration))
         {
           state = State::kAvoidingBorderTurning;
         }
@@ -164,7 +166,7 @@ int main()
 
       case State::kAvoidingBorderTurning:
         // Event timeout
-        if (CanTransitionToSeekingForward(kAvoidingBorderTurnDuration))
+        if (TryTransitionToSeekingForward(kAvoidingBorderTurnDuration))
         {
           state = State::kSeeking;
         }
