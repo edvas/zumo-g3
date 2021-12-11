@@ -1,5 +1,6 @@
 #include <util/delay.h>
 
+// Variables for the ultrasonic distance sensor values
 uint8_t UDI0_value_cm = 0;
 uint8_t UDI1_value_cm = 0;
 
